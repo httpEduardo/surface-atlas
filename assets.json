@@ -1,0 +1,44 @@
+{
+  "assets": [
+    {
+      "id": "web-portal",
+      "host": "portal.example.com",
+      "env": "prod",
+      "owner": "growth",
+      "public": true,
+      "tech": ["nginx", "node"],
+      "ports": [443],
+      "last_assessed_days": 47
+    },
+    {
+      "id": "legacy-api",
+      "host": "legacy-api.example.com",
+      "env": "prod",
+      "owner": "",
+      "public": true,
+      "tech": ["apache", "php"],
+      "ports": [80, 443],
+      "last_assessed_days": 210
+    },
+    {
+      "id": "analytics",
+      "host": "analytics.internal",
+      "env": "corp",
+      "owner": "data",
+      "public": false,
+      "tech": ["python"],
+      "ports": [8080],
+      "last_assessed_days": 15
+    },
+    {
+      "id": "dev-console",
+      "host": "dev-console.example.com",
+      "env": "dev",
+      "owner": "platform",
+      "public": true,
+      "tech": ["grafana"],
+      "ports": [3000],
+      "last_assessed_days": 120
+    }
+  ]
+}
