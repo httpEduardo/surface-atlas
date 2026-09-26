@@ -70,13 +70,16 @@ class Asset:
         assessed = data.get("last_assessed_days")
         if assessed is not None and (isinstance(assessed, bool) or not isinstance(assessed, int) or assessed < 0):
             raise ValueError(f"asset #{index}: 'last_assessed_days' must be a non-negative integer")
+        public = data.get("public", False)
+        if not isinstance(public, bool):
+            raise ValueError(f"asset #{index}: 'public' must be a boolean")
 
         return cls(
             id=str(data.get("id") or data.get("host") or f"asset-{index}"),
             host=str(data.get("host") or ""),
             env=str(data.get("env") or "unknown").lower(),
             owner=str(data.get("owner") or "").strip(),
-            public=bool(data.get("public", False)),
+            public=public,
             tech=tuple(str(t).lower() for t in as_list("tech")),
             ports=tuple(sorted(set(ports))),
             last_assessed_days=assessed,

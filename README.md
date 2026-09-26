@@ -26,7 +26,7 @@ Each rule adds its weight when it matches. The total is capped at 100.
 | 25–44 | medium |
 | 0–24 | low |
 
-The weights are a starting point, not gospel. See [Custom weights](#custom-weights) to tune them.
+The weights are a prioritization heuristic, not a vulnerability verdict. Tune them to match your environment with [Custom weights](#custom-weights), and validate high scores against current asset context.
 
 ## Installation
 
@@ -118,7 +118,7 @@ Either an object with an `assets` list or a bare list:
 | `host` | string | Hostname or IP, for display |
 | `env` | string | `prod`, `staging`, `dev`, … (case-insensitive) |
 | `owner` | string | Team or person; empty means unowned |
-| `public` | boolean | Reachable from the internet |
+| `public` | boolean | Reachable from the internet; use JSON `true` or `false` |
 | `tech` | string[] | Detected technologies |
 | `ports` | integer[] | Open ports, 1–65535 |
 | `last_assessed_days` | integer | Days since the last review; omit if it has never been assessed |
