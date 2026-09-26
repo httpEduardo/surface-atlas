@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from surface_atlas.cli import EXIT_ERROR, EXIT_OK, EXIT_RISK, main
+from attack_surface_prioritizer.cli import EXIT_ERROR, EXIT_OK, EXIT_RISK, main
 
 EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
 

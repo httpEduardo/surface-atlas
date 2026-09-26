@@ -1,8 +1,8 @@
-# surface-atlas
+# attack-surface-prioritizer
 
 Turns an inventory of internet-facing assets into a ranked list of what to look at first. Each asset gets an exposure score from 0 to 100, a risk level, and the specific reasons behind the number.
 
-Every security team has more hosts than time. The ones that end up in incident reports tend to share the same traits: nobody owns them, they run something old, they expose a database or admin panel to the internet, and nobody has looked at them in months. surface-atlas scores exactly those traits, so the conversation shifts from "we have 400 assets" to "these five need an owner and a review this week".
+Every security team has more hosts than time. The ones that end up in incident reports tend to share the same traits: nobody owns them, they run something old, they expose a database or admin panel to the internet, and nobody has looked at them in months. The prioritizer scores those factors so teams can focus review on the assets that need attention first.
 
 ## How scoring works
 
@@ -33,21 +33,21 @@ The weights are a prioritization heuristic, not a vulnerability verdict. Tune th
 Requires Python 3.9 or newer. No third-party dependencies.
 
 ```bash
-pip install git+https://github.com/httpEduardo/surface-atlas.git
+pip install git+https://github.com/httpEduardo/attack-surface-prioritizer.git
 ```
 
 Or run from a clone:
 
 ```bash
-git clone https://github.com/httpEduardo/surface-atlas.git
-cd surface-atlas
-PYTHONPATH=src python -m surface_atlas -i examples/assets.json
+git clone https://github.com/httpEduardo/attack-surface-prioritizer.git
+cd attack-surface-prioritizer
+PYTHONPATH=src python -m attack_surface_prioritizer -i examples/assets.json
 ```
 
 ## Usage
 
 ```bash
-surface-atlas -i examples/assets.json -n 3
+attack-surface-prioritizer -i examples/assets.json -n 3
 ```
 
 ```text
@@ -140,13 +140,13 @@ Pass a JSON object mapping rule IDs to weights. A weight of `0` disables a rule,
 ```
 
 ```bash
-surface-atlas -i inventory.json -w examples/weights.json
+attack-surface-prioritizer -i inventory.json -w examples/weights.json
 ```
 
 ## Using it in CI or on a schedule
 
 ```bash
-surface-atlas -i inventory.json --fail-on critical -f csv > exposure.csv
+attack-surface-prioritizer -i inventory.json --fail-on critical -f csv > exposure.csv
 ```
 
 Run it nightly against a fresh inventory export and the build turns red the moment a critical asset appears.
@@ -157,7 +157,7 @@ Run it nightly against a fresh inventory export and the build turns red the mome
 python -m unittest discover -s tests -t .
 ```
 
-`src/surface_atlas/scoring.py` holds the rules — each is a small function that returns a reason string or `None` — and `cli.py` handles loading and output. Adding a rule means writing the function, registering it in `DEFAULT_RULES` and adding a test.
+`src/attack_surface_prioritizer/scoring.py` holds the rules — each is a small function that returns a reason string or `None` — and `cli.py` handles loading and output. Adding a rule means writing the function, registering it in `DEFAULT_RULES` and adding a test.
 
 ## License
 

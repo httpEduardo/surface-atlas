@@ -1,6 +1,6 @@
 import unittest
 
-from surface_atlas import Asset, build_rules, score_asset, score_inventory
+from attack_surface_prioritizer import Asset, build_rules, score_asset, score_inventory
 
 
 def asset(**kwargs):

@@ -1,4 +1,4 @@
-"""Command-line interface for surface-atlas."""
+"""Command-line interface for attack-surface-prioritizer."""
 
 from __future__ import annotations
 
@@ -86,7 +86,7 @@ def write_csv(out: TextIO, scored: list[ScoredAsset]) -> None:
 
 def main(argv: Sequence[str] | None = None, out: TextIO = sys.stdout, err: TextIO = sys.stderr) -> int:
     parser = argparse.ArgumentParser(
-        prog="surface-atlas",
+        prog="attack-surface-prioritizer",
         description="Score an attack-surface inventory and rank assets by exposure risk.",
     )
     parser.add_argument("--input", "-i", required=True, help="asset inventory (JSON)")

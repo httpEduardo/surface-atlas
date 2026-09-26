@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "surface-atlas"
+name = "attack-surface-prioritizer"
 version = "1.0.0"
-description = "Build an attack-surface inventory and rank assets by exposure risk."
+description = "Prioritize attack-surface assets by exposure risk."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Eduardo" }]
@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 [project.scripts]
-surface-atlas = "surface_atlas.cli:main"
+attack-surface-prioritizer = "attack_surface_prioritizer.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
