@@ -1,42 +1,27 @@
-# attack-surface-prioritizer
+# Attack Surface Prioritizer
 
-Turns an inventory of internet-facing assets into a ranked list of what to look at first. Each asset gets an exposure score from 0 to 100, a risk level, and the specific reasons behind the number.
+**A lightweight way to decide which internet-facing assets deserve attention first.**
 
-Every security team has more hosts than time. The ones that end up in incident reports tend to share the same traits: nobody owns them, they run something old, they expose a database or admin panel to the internet, and nobody has looked at them in months. The prioritizer scores those factors so teams can focus review on the assets that need attention first.
+Attack Surface Prioritizer reads a JSON inventory of hosts and services, scores each asset, and explains the factors behind its score. It helps security and engineering teams turn a long asset list into a short, actionable review queue.
 
-## How scoring works
+## What it looks at
 
-Each rule adds its weight when it matches. The total is capped at 100.
+- Publicly reachable services and sensitive ports
+- Missing ownership and non-production systems exposed to the internet
+- Older technologies, plain HTTP, and overdue security reviews
 
-| Rule | Weight | Matches when |
-|------|-------:|--------------|
-| `public` | 25 | The asset is reachable from the internet |
-| `sensitive-port` | 30 | A public asset exposes SSH, RDP, databases, Redis, Elasticsearch, Docker, Kubelet… |
-| `no-owner` | 20 | No team or person is accountable for it |
-| `non-production` | 15 | A dev, test, QA or staging environment is public |
-| `legacy-tech` | 15 | The stack includes PHP, IIS, Tomcat, Apache httpd, JBoss, WebLogic, Struts or ColdFusion |
-| `stale-assessment` | 15 | Never assessed, or last assessed more than 90 days ago |
-| `plaintext-http` | 10 | A public asset serves HTTP on 80, 8000 or 8080 |
-| `many-ports` | 5 | More than two open ports |
+Each asset receives a score from 0 to 100, a risk level, and a short list of reasons. The score is a triage aid, not a vulnerability verdict.
 
-| Score | Level |
-|------:|-------|
-| 70–100 | critical |
-| 45–69 | high |
-| 25–44 | medium |
-| 0–24 | low |
+## Quick start
 
-The weights are a prioritization heuristic, not a vulnerability verdict. Tune them to match your environment with [Custom weights](#custom-weights), and validate high scores against current asset context.
-
-## Installation
-
-Requires Python 3.9 or newer. No third-party dependencies.
+Requires Python 3.9 or newer.
 
 ```bash
 pip install git+https://github.com/httpEduardo/attack-surface-prioritizer.git
+attack-surface-prioritizer --input inventory.json
 ```
 
-Or run from a clone:
+To run directly from a clone:
 
 ```bash
 git clone https://github.com/httpEduardo/attack-surface-prioritizer.git
@@ -44,120 +29,26 @@ cd attack-surface-prioritizer
 PYTHONPATH=src python -m attack_surface_prioritizer -i examples/assets.json
 ```
 
-## Usage
-
-```bash
-attack-surface-prioritizer -i examples/assets.json -n 3
-```
-
-```text
-Top 3 of 5 assets by exposure
-
-   85  CRITICAL dev-console (dev-console.example.com)
-                 +25  reachable from the internet
-                 +30  sensitive service exposed: 3000 (Grafana/dev server)
-                 +15  public dev environment
-                 +15  last assessed 120 days ago
-
-   85  CRITICAL legacy-api (legacy-api.example.com)
-                 +25  reachable from the internet
-                 +20  no owner assigned
-                 +15  legacy technology (apache, php)
-                 +15  last assessed 210 days ago
-                 +10  serves plain HTTP on port 80
-
-   70  CRITICAL orders-db (db-orders.example.com)
-                 +25  reachable from the internet
-                 +30  sensitive service exposed: 22 (SSH), 5432 (PostgreSQL)
-                 +15  never assessed
-
-Coverage
-  public-facing assets: 4/5
-  owner coverage:       80%
-  environments:         corp 1, dev 1, prod 3
-  most common factors:  public (4), stale-assessment (3), sensitive-port (2), no-owner (1), legacy-tech (1), plaintext-http (1), non-production (1)
-```
-
-### Options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `-i, --input FILE` | required | Asset inventory in JSON |
-| `-n, --top N` | `10` | How many assets to list in the text report |
-| `-f, --format {text,json,csv}` | `text` | CSV drops straight into a spreadsheet; JSON includes every asset and the summary |
-| `-w, --weights FILE` | | Override rule weights |
-| `--fail-on LEVEL` | | Exit with `1` if any asset reaches `low`, `medium`, `high` or `critical` |
-| `--version` | | Print the version |
-
-Exit code `2` means the inventory or weights file couldn't be read or failed validation.
-
-## Inventory format
-
-Either an object with an `assets` list or a bare list:
+## Inventory example
 
 ```json
 {
   "assets": [
     {
-      "id": "legacy-api",
-      "host": "legacy-api.example.com",
-      "env": "prod",
-      "owner": "",
+      "id": "customer-api",
+      "host": "api.example.com",
+      "env": "production",
+      "owner": "Platform",
       "public": true,
-      "tech": ["apache", "php"],
-      "ports": [80, 443],
-      "last_assessed_days": 210
+      "tech": ["nginx", "python"],
+      "ports": [443],
+      "last_assessed_days": 30
     }
   ]
 }
 ```
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `id` | string | Falls back to `host` when missing |
-| `host` | string | Hostname or IP, for display |
-| `env` | string | `prod`, `staging`, `dev`, … (case-insensitive) |
-| `owner` | string | Team or person; empty means unowned |
-| `public` | boolean | Reachable from the internet; use JSON `true` or `false` |
-| `tech` | string[] | Detected technologies |
-| `ports` | integer[] | Open ports, 1–65535 |
-| `last_assessed_days` | integer | Days since the last review; omit if it has never been assessed |
-
-Records with invalid types (a port of `70000`, `ports` given as a number) are rejected with a message pointing at the asset, rather than quietly scored as safe.
-
-The format is intentionally simple so it can be generated from whatever you already have — a CMDB export, cloud inventory, or the output of `nmap`/`httpx` plus a spreadsheet of owners.
-
-## Custom weights
-
-Pass a JSON object mapping rule IDs to weights. A weight of `0` disables a rule, and unknown rule names are rejected so typos don't slip by.
-
-```json
-{
-  "public": 30,
-  "no-owner": 25,
-  "many-ports": 0
-}
-```
-
-```bash
-attack-surface-prioritizer -i inventory.json -w examples/weights.json
-```
-
-## Using it in CI or on a schedule
-
-```bash
-attack-surface-prioritizer -i inventory.json --fail-on critical -f csv > exposure.csv
-```
-
-Run it nightly against a fresh inventory export and the build turns red the moment a critical asset appears.
-
-## Development
-
-```bash
-python -m unittest discover -s tests -t .
-```
-
-`src/attack_surface_prioritizer/scoring.py` holds the rules — each is a small function that returns a reason string or `None` — and `cli.py` handles loading and output. Adding a rule means writing the function, registering it in `DEFAULT_RULES` and adding a test.
+The report ranks assets by score and shows the reasons for each result. Use `--format json` or `--format csv` to export the full inventory and scores.
 
 ## License
 
