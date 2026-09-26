@@ -39,6 +39,15 @@
       "tech": ["grafana"],
       "ports": [3000],
       "last_assessed_days": 120
+    },
+    {
+      "id": "orders-db",
+      "host": "db-orders.example.com",
+      "env": "prod",
+      "owner": "commerce",
+      "public": true,
+      "tech": ["postgresql"],
+      "ports": [22, 5432]
     }
   ]
 }
